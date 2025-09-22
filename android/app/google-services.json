@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "374347850092",
+    "project_id": "fast-konseling-f4cf2",
+    "storage_bucket": "fast-konseling-f4cf2.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:374347850092:android:725b92c8fb595007829349",
+        "android_client_info": {
+          "package_name": "com.example.fast_konseling"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDTS2MexRtknnXVo9YORaLjw4xoFFgrr_Q"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
