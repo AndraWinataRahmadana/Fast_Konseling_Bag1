@@ -22,7 +22,7 @@ class ArticleCard extends StatelessWidget {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(12),
           gradient: LinearGradient(
-            colors: [color.withOpacity(0.7), color],
+            colors: [color.withAlpha(180), color],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
@@ -42,7 +42,7 @@ class ArticleCard extends StatelessWidget {
             child: Text(
               subtitle,
               style: TextStyle(
-                color: Colors.white.withOpacity(0.9),
+                color: Colors.white70,
               ),
             ),
           ),

@@ -15,6 +15,7 @@ class PsychologistCard extends StatelessWidget {
         contentPadding: const EdgeInsets.all(12.0),
         leading: CircleAvatar(
           radius: 30,
+          
           // Menambahkan pengecekan jika URL kosong
           backgroundImage: psychologist.photoUrl.isNotEmpty
               ? NetworkImage(psychologist.photoUrl)
