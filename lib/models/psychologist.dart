@@ -1,7 +1,7 @@
-import 'package:flutter/foundation.dart'; // Import ini penting untuk debugPrint
-
+// lib/models/psychologist.dart
 class Psychologist {
-  final String id;
+  final String id; // Ini adalah NIP/ID Dokumen
+  final String uid; // <-- TAMBAHKAN INI (NIK/ID Auth)
   final String name;
   final String specialization;
   final String photoUrl;
@@ -9,6 +9,7 @@ class Psychologist {
 
   Psychologist({
     required this.id,
+    required this.uid, // <-- TAMBAHKAN INI
     required this.name,
     required this.specialization,
     required this.photoUrl,
@@ -16,17 +17,12 @@ class Psychologist {
   });
 
   factory Psychologist.fromMap(String id, Map<String, dynamic> data) {
-
-    // --- INI ADALAH KODE MATA-MATA KITA ---
-    // Ini akan mencetak isi data mentah ke Debug Console
-    debugPrint("DATA MENTAH DARI FIRESTORE UNTUK ID $id: $data");
-    // -----------------------------------------
-
     return Psychologist(
       id: id,
-      name: data['name'] ?? 'Nama Tidak Ditemukan', 
-      specialization: data['specialization'] ?? '',
-      photoUrl: data['photoUrl'] ?? '', 
+      uid: data['uid'] ?? '', // <-- TAMBAHKAN INI
+      name: data['name'] ?? 'No Name',
+      specialization: data['specialization'] ?? 'No Specialization',
+      photoUrl: data['photoUrl'] ?? '',
       rating: (data['rating'] ?? 0.0).toDouble(),
     );
   }

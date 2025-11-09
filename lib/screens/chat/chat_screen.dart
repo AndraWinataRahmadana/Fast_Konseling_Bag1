@@ -6,9 +6,10 @@ import 'package:fast_konseling/services/chat_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-/// ChatScreen adalah halaman antarmuka obrolan antara pengguna dan psikolog.
 class ChatScreen extends StatefulWidget {
+  // ID dari pihak lawan bicara.
   final String psychologistId;
+  // Nama dari pihak lawan bicara.
   final String psychologistName;
 
   const ChatScreen({
@@ -22,31 +23,70 @@ class ChatScreen extends StatefulWidget {
 }
 
 class _ChatScreenState extends State<ChatScreen> {
-  // Controller untuk field input pesan
   final TextEditingController _messageController = TextEditingController();
-  // Instance dari ChatService untuk mengelola logika chat
   final ChatService _chatService = ChatService();
-  // ID unik untuk ruang obrolan ini
+  final ScrollController _scrollController = ScrollController();
   late String chatRoomId;
 
   @override
   void initState() {
     super.initState();
-    // Membuat ID ruang obrolan saat halaman pertama kali dimuat
+    // Membuat ID ruang obrolan saat halaman pertama kali dimuat.
     chatRoomId = _chatService.getChatRoomId(widget.psychologistId);
   }
 
   /// Fungsi untuk mengirim pesan.
   void _sendMessage() {
-    // Memanggil fungsi dari ChatService
-    _chatService.sendMessage(chatRoomId, _messageController.text);
-    // Mengosongkan field input setelah pesan terkirim
+    if (_messageController.text.trim().isEmpty) return;
+
+    // Ambil data pengguna saat ini (bisa jadi pengguna atau psikolog)
+    final currentUser = Provider.of<UserModel?>(context, listen: false);
+    if (currentUser == null) return;
+
+    // --- INI ADALAH LOGIKA YANG DIPERBAIKI ---
+    String userId, userName, userPhotoUrl, psychologistId, psychologistName;
+
+    if (currentUser.role == 'psychologist') {
+      // Jika yang mengirim adalah PSIKOLOG:
+      psychologistId = currentUser.uid;
+      psychologistName = currentUser.displayName ?? 'Psikolog';
+      // Lawan bicaranya adalah si pengguna (pasien)
+      userId = widget.psychologistId;
+      userName = widget.psychologistName;
+      userPhotoUrl = ''; // Foto pasien tidak perlu kita simpan di sini
+    } else {
+      // Jika yang mengirim adalah PENGGUNA:
+      userId = currentUser.uid;
+      userName = currentUser.displayName ?? 'Pengguna';
+      userPhotoUrl = currentUser.photoURL ?? '';
+      // Lawan bicaranya adalah si psikolog
+      psychologistId = widget.psychologistId;
+      psychologistName = widget.psychologistName;
+    }
+
+    // Panggil fungsi sendMessage dari ChatService dengan parameter bernama
+    _chatService.sendMessage(
+      chatRoomId,
+      _messageController.text.trim(),
+      // 'userId' dan 'psychologistId' sekarang sudah didefinisikan
+      userId: userId,
+      userName: userName,
+      userPhotoUrl: userPhotoUrl,
+      psychologistId: psychologistId,
+      psychologistName: psychologistName,
+    );
+    // --- AKHIR PERBAIKAN ---
+
     _messageController.clear();
+    _scrollController.animateTo(
+      0,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeOut,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    // Mendapatkan data pengguna yang sedang login
     final currentUser = Provider.of<UserModel?>(context);
 
     return Scaffold(
@@ -55,9 +95,8 @@ class _ChatScreenState extends State<ChatScreen> {
       ),
       body: Column(
         children: [
-          // Bagian untuk menampilkan daftar pesan
           Expanded(
-            child: StreamBuilder(
+            child: StreamBuilder<QuerySnapshot>(
               stream: _chatService.getMessages(chatRoomId),
               builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
                 if (snapshot.hasError) {
@@ -66,23 +105,36 @@ class _ChatScreenState extends State<ChatScreen> {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());
                 }
-                // Tampilkan pesan dalam ListView
                 return ListView(
-                  reverse: true, // Pesan terbaru muncul di bawah
+                  controller: _scrollController,
+                  reverse: true,
+                  padding: const EdgeInsets.all(10.0),
                   children: snapshot.data!.docs.map((doc) {
                     Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
-                    // Cek apakah pesan ini dikirim oleh pengguna saat ini
                     bool isMe = data['senderId'] == currentUser?.uid;
-                    var alignment = isMe ? Alignment.centerRight : Alignment.centerLeft;
-                    // Widget untuk bubble chat
+
+                    var alignment =
+                        isMe ? Alignment.centerRight : Alignment.centerLeft;
+                    var bubbleColor =
+                        isMe ? Theme.of(context).primaryColorLight : Colors.white;
+                    var textColor = isMe ? Colors.black87 : Colors.black87;
+
                     return Container(
                       alignment: alignment,
                       child: Card(
-                        color: isMe ? Theme.of(context).primaryColorLight : Colors.white,
-                        margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+                        color: bubbleColor,
+                        elevation: 2,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        margin: const EdgeInsets.symmetric(
+                            vertical: 5, horizontal: 0),
                         child: Padding(
                           padding: const EdgeInsets.all(12.0),
-                          child: Text(data['text']),
+                          child: Text(
+                            data['text'],
+                            style: TextStyle(color: textColor),
+                          ),
                         ),
                       ),
                     );
@@ -91,7 +143,6 @@ class _ChatScreenState extends State<ChatScreen> {
               },
             ),
           ),
-          // Bagian input untuk mengetik pesan
           _buildMessageInput(),
         ],
       ),
@@ -100,23 +151,34 @@ class _ChatScreenState extends State<ChatScreen> {
 
   /// Widget untuk membangun field input pesan dan tombol kirim.
   Widget _buildMessageInput() {
-    return Padding(
+    return Container(
       padding: const EdgeInsets.all(8.0),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.3),
+            spreadRadius: 1,
+            blurRadius: 5,
+          ),
+        ],
+      ),
       child: Row(
         children: [
           Expanded(
             child: TextField(
               controller: _messageController,
+              onSubmitted: (value) => _sendMessage(),
               decoration: const InputDecoration(
                 hintText: "Ketik pesan...",
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(20)),
-                ),
+                border: InputBorder.none,
+                contentPadding: EdgeInsets.symmetric(horizontal: 10),
               ),
+              textCapitalization: TextCapitalization.sentences,
             ),
           ),
           IconButton(
-            icon: const Icon(Icons.send),
+            icon: Icon(Icons.send, color: Theme.of(context).primaryColor),
             onPressed: _sendMessage,
           ),
         ],

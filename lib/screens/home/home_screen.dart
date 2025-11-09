@@ -1,5 +1,6 @@
 // lib/screens/home/home_screen.dart
 
+// Impor package dan file yang dibutuhkan dari Flutter dan proyek.
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:fast_konseling/models/user_model.dart';

@@ -20,11 +20,11 @@ class PsychologistCard extends StatelessWidget {
           backgroundImage: psychologist.photoUrl.isNotEmpty
               ? NetworkImage(psychologist.photoUrl)
               : null,
+          backgroundColor: Colors.grey.shade200,
           // Menampilkan ikon jika tidak ada gambar
           child: psychologist.photoUrl.isEmpty
               ? const Icon(Icons.person, size: 30)
               : null,
-          backgroundColor: Colors.grey.shade200,
         ),
         title: Text(psychologist.name, style: const TextStyle(fontWeight: FontWeight.bold)),
         subtitle: Text(psychologist.specialization),

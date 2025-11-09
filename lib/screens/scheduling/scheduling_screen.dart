@@ -5,7 +5,6 @@ import 'package:fast_konseling/models/psychologist.dart';
 import 'package:fast_konseling/screens/chat/chat_screen.dart';
 
 /// Halaman ini berfungsi sebagai placeholder untuk proses penjadwalan.
-/// Di masa depan, halaman ini bisa berisi kalender untuk memilih tanggal dan waktu.
 class SchedulingScreen extends StatelessWidget {
   final Psychologist psychologist;
 
@@ -23,7 +22,6 @@ class SchedulingScreen extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // Informasi psikolog yang dipilih
               CircleAvatar(
                 radius: 50,
                 backgroundImage: NetworkImage(psychologist.photoUrl),
@@ -38,28 +36,29 @@ class SchedulingScreen extends StatelessWidget {
                 style: TextStyle(fontSize: 16, color: Colors.grey.shade600),
               ),
               const SizedBox(height: 32),
-              // Placeholder untuk pilihan tanggal dan waktu
               const Text(
                 'Fitur pemilihan tanggal dan waktu akan tersedia di sini.',
                 textAlign: TextAlign.center,
                 style: TextStyle(fontSize: 16),
               ),
               const SizedBox(height: 32),
-              // Tombol untuk konfirmasi dan memulai chat
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
                 ),
                 onPressed: () {
-                  // Setelah "konfirmasi", arahkan ke halaman chat
-                  Navigator.of(context).pushReplacement( // pushReplacement agar tidak bisa kembali ke halaman jadwal
+                  // --- PERBAIKAN LOGIKA FATAL ADA DI SINI ---
+                  // Kita harus mengirim 'psychologist.uid' (NIK/Auth ID) ke ChatScreen,
+                  // BUKAN 'psychologist.id' (NIP/Document ID).
+                  Navigator.of(context).pushReplacement(
                     MaterialPageRoute(
                       builder: (context) => ChatScreen(
-                        psychologistId: psychologist.id,
+                        psychologistId: psychologist.uid, // <-- INI PERBAIKANNYA
                         psychologistName: psychologist.name,
                       ),
                     ),
                   );
+                  // --- AKHIR PERBAIKAN ---
                 },
                 child: const Text('Konfirmasi & Mulai Konseling'),
               ),
